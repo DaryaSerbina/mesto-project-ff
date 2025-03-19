@@ -2,7 +2,7 @@ import "./pages/index.css";
 import "./scripts/cards.js";
 import { initialCards } from "./scripts/cards.js";
 import { createCard, deleteCard, likeCard } from "./components/card.js";
-import { openModal, closeModal, openImage } from "./components/modal.js";
+import { openModal, closeModal } from "./components/modal.js";
 
 const content = document.querySelector(".content");
 const cardsContainer = content.querySelector(".places__list");
@@ -22,6 +22,7 @@ const addCardForm = document.forms["new-place"];
 const popupCaption = document.querySelector(".popup__caption");
 const popups = document.querySelectorAll(".popup");
 const closeButtons = document.querySelectorAll(".popup__close");
+const nameEditForm = document.forms["edit-profile"];
 
 initialCards.forEach((cardData) => {
   const newCard = createCard(cardData, deleteCard, handleOpenImage, likeCard);
@@ -37,13 +38,13 @@ popups.forEach((popup) => {
 });
 
 closeButtons.forEach((button) => {
+  const popup = button.closest(".popup");
   button.addEventListener("click", () => {
-    const popup = button.closest(".popup");
     popupHandler(popup);
   });
 });
 
-popupNameEdit.addEventListener("submit", handleEditForm);
+nameEditForm.addEventListener("submit", handleEditForm);
 
 editProfileButton.addEventListener("click", () => {
   openModal(popupNameEdit);
@@ -53,7 +54,7 @@ addCardButton.addEventListener("click", () => {
   openModal(popupAddCard);
 });
 
-popupAddCard.addEventListener("submit", function (evt) {
+addCardForm.addEventListener("submit", function (evt) {
   evt.preventDefault();
   const addCard = {
     name: nameInputCard.value,
@@ -85,4 +86,17 @@ function popupHandler(popup) {
 
 function handleOpenImage(imageSrc, imageName) {
   openImage(imageSrc, imageName, popupImage, popupCaption, popupOpenImage);
+}
+
+function openImage(
+  imageSrc,
+  imageName,
+  popupImage,
+  popupCaption,
+  popupOpenImage
+) {
+  popupImage.src = imageSrc;
+  popupCaption.textContent = imageName;
+  popupImage.alt = imageName;
+  openModal(popupOpenImage);
 }
