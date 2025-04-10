@@ -1,3 +1,3 @@
 # Проектная работа Mesto
-https://github.com/DaryaSerbina/mesto-project-ff
+https://daryaserbina.github.io/mesto-project-ff/
 
