@@ -103,10 +103,12 @@ editAvatarButton.addEventListener("click", () => {
 editAvatarForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
   const avatarUrl = urlInputAvatar.value;
-  renderLoading(evt.submitter, true);
+  const submitButton = editAvatarForm.querySelector(".form__submit");
+  renderLoading(submitButton, true);
   updateAvatar(avatarUrl)
     .then((userData) => {
-      profileImage.style.backgroundImage = `url(${userData.avatar})`;
+      const newAvatarUrl = userData.avatar || avatarUrl 
+      profileImage.style.backgroundImage = `url(${newAvatarUrl})`;
       editAvatarForm.reset();
       closeModal(popupChangeAvatar);
     })
@@ -114,7 +116,7 @@ editAvatarForm.addEventListener("submit", (evt) => {
       console.error("Ошибка обновления аватара:", err);
     })
     .finally(() => {
-      renderLoading(evt.submitter, false);
+      renderLoading(submitButton, false);
     });
 });
 
