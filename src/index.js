@@ -13,6 +13,8 @@ import {
   removeCard as removeCardServer,
 } from "./components/api.js";
 
+let currentCardElement = null;
+let currentCardId = null;
 const content = document.querySelector(".content");
 const cardsContainer = content.querySelector(".places__list");
 const editProfileButton = document.querySelector(".profile__edit-button");
@@ -48,9 +50,9 @@ const validationConfig = {
 let currentUserId;
 
 document.addEventListener("DOMContentLoaded", () => {
-  Promise.all([getEdit(), getCards()]) 
+  Promise.all([getEdit(), getCards()])
     .then(([userData, cards]) => {
-      currentUserId = userData._id; 
+      currentUserId = userData._id;
       profileTitle.textContent = userData.name;
       profileDescription.textContent = userData.about;
       profileImage.style.backgroundImage = `url(${userData.avatar})`;
@@ -62,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
           handleDeleteClick,
           likeCardServer,
           removeCardServer,
-          currentUserId 
+          currentUserId
         );
         cardsContainer.append(cardElement);
       });
@@ -101,16 +103,19 @@ editAvatarButton.addEventListener("click", () => {
 editAvatarForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
   const avatarUrl = urlInputAvatar.value;
-  const submitButton = editAvatarForm.querySelector(".form__submit");
-  renderLoading(submitButton, true);
+  renderLoading(evt.submitter, true);
   updateAvatar(avatarUrl)
     .then((userData) => {
       profileImage.style.backgroundImage = `url(${userData.avatar})`;
-      renderLoading(submitButton, false);
       editAvatarForm.reset();
       closeModal(popupChangeAvatar);
     })
-    .catch(console.error);
+    .catch((err) => {
+      console.error("Ошибка обновления аватара:", err);
+    })
+    .finally(() => {
+      renderLoading(evt.submitter, false);
+    });
 });
 
 editProfileButton.addEventListener("click", () => {
@@ -130,6 +135,7 @@ addCardForm.addEventListener("submit", function (evt) {
   const formData = new FormData(addCardForm);
   const name = formData.get("place-name");
   const link = formData.get("link");
+  renderLoading(evt.submitter, true);
 
   postCard(name, link)
     .then((cardData) => {
@@ -139,7 +145,7 @@ addCardForm.addEventListener("submit", function (evt) {
         handleDeleteClick,
         likeCardServer,
         removeCardServer,
-        currentUserId 
+        currentUserId
       );
       cardsContainer.prepend(newCard);
       addCardForm.reset();
@@ -147,21 +153,30 @@ addCardForm.addEventListener("submit", function (evt) {
     })
     .catch((err) => {
       console.error("Ошибка при добавлении карточки:", err);
+    })
+    .finally(() => {
+      renderLoading(evt.submitter, false);
     });
 });
 
 function handleEditForm(evt) {
   evt.preventDefault();
-  const submitButton = nameEditForm.querySelector(".form__submit");
-  renderLoading(submitButton, true);
   const nameInputValue = nameInput.value;
   const jobInputValue = jobInput.value;
-  profileTitle.textContent = nameInputValue;
-  profileDescription.textContent = jobInputValue;
-  renderLoading(submitButton, false);
-  closeModal(popupNameEdit);
-  changeName(nameInputValue, jobInputValue);
-  clearValidation(nameEditForm, validationConfig);
+  renderLoading(evt.submitter, true);
+  changeName(nameInputValue, jobInputValue)
+    .then((userData) => {
+      profileTitle.textContent = userData.name;
+      profileDescription.textContent = userData.about;
+      closeModal(popupNameEdit);
+      clearValidation(nameEditForm, validationConfig);
+    })
+    .catch((err) => {
+      console.error("Ошибка обновления профиля:", err);
+    })
+    .finally(() => {
+      renderLoading(evt.submitter, false);
+    });
 }
 
 function editInput() {
@@ -206,12 +221,22 @@ function openImage(
 function handleDeleteClick(cardElement, cardId) {
   const popupDelete = document.querySelector(".popup_type_delete");
   const deleteForm = popupDelete.querySelector("form");
+  currentCardElement = cardElement;
+  currentCardId = cardId;
   const handleSubmit = (evt) => {
     evt.preventDefault();
-    clearValidation(deleteCardForm, validationConfig);
-    deleteCardFromServer(cardId);
-    deleteCard(cardElement);
-    closeModal(popupDelete);
+    if (currentCardId && currentCardElement) {
+      deleteCardFromServer(currentCardId)
+        .then(() => {
+          deleteCard(currentCardElement);
+          closeModal(popupDelete);
+          currentCardElement = null;
+          currentCardId = null;
+        })
+        .catch((err) => {
+          console.error("Ошибка удаления карточки:", err);
+        });
+    }
   };
 
   const handleOverlayClose = (evt) => {
@@ -222,9 +247,13 @@ function handleDeleteClick(cardElement, cardId) {
       deleteForm.removeEventListener("submit", handleSubmit);
       popupDelete.removeEventListener("click", handleOverlayClose);
       closeModal(popupDelete);
+      currentCardElement = null;
+      currentCardId = null;
     }
   };
 
+  deleteForm.removeEventListener("submit", handleSubmit);
+  popupDelete.removeEventListener("click", handleOverlayClose);
   deleteForm.addEventListener("submit", handleSubmit);
   popupDelete.addEventListener("click", handleOverlayClose);
 

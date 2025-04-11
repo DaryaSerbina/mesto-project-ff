@@ -6,46 +6,35 @@ const config = {
   },
 };
 
-const checkResponse = (res) => {
-  if (res.ok) {
-    return res.json();
-  }
-  return Promise.reject(`Ошибка: ${res.status}`);
-};
-
-export const getProfileInfo = () => {
-  return fetch(`${config.baseUrl}/users/me`, {
-    headers: config.headers,
-  })
-    .then(checkResponse)
+function request(endpoint, options) {
+  const url = `${config.baseUrl}${endpoint}`;
+  return fetch(url, options)
+    .then((res) => {
+      if (res.ok) {
+        return res.json();
+      }
+      return Promise.reject(`Ошибка: ${res.status}`);
+    })
     .catch((err) => {
-      console.error("Ошибка загрузки профиля:", err);
+      console.error(`Ошибка запроса к ${endpoint}:`, err);
       throw err;
     });
+}
+
+export const getProfileInfo = () => {
+  return request("/users/me", { headers: config.headers });
 };
 
 export const getInitialCards = () => {
-  return fetch(`${config.baseUrl}/cards`, {
-    headers: config.headers,
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка загрузки карточек:", err);
-      throw err;
-    });
+  return request("/cards", { headers: config.headers });
 };
 
 export const updateProfile = (name, about) => {
-  return fetch(`${config.baseUrl}/users/me`, {
+  return request("/users/me", {
     method: "PATCH",
     headers: config.headers,
     body: JSON.stringify({ name, about }),
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка обновления профиля:", err);
-      throw err;
-    });
+  });
 };
 
 export const addNewCard = (name, link) => {
@@ -53,48 +42,28 @@ export const addNewCard = (name, link) => {
     method: "POST",
     headers: config.headers,
     body: JSON.stringify({ name, link }),
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка добавления карточки:", err);
-      throw err;
-    });
+  });
 };
 
 export const deleteCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: "DELETE",
     headers: config.headers,
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка удаления карточки:", err);
-      throw err;
-    });
+  });
 };
 
 export const likeCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "PUT",
     headers: config.headers,
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка лайка:", err);
-      throw err;
-    });
+  });
 };
 
 export const removeCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: "DELETE",
     headers: config.headers,
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка снятия лайка:", err);
-      throw err;
-    });
+  });
 };
 
 export const updateAvatar = (avatarUrl) => {
@@ -102,10 +71,5 @@ export const updateAvatar = (avatarUrl) => {
     method: "PATCH",
     headers: config.headers,
     body: JSON.stringify({ avatar: avatarUrl }),
-  })
-    .then(checkResponse)
-    .catch((err) => {
-      console.error("Ошибка обновления аватара:", err);
-      throw err;
-    });
+  });
 };
