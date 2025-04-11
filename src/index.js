@@ -107,7 +107,7 @@ editAvatarForm.addEventListener("submit", (evt) => {
   renderLoading(submitButton, true);
   updateAvatar(avatarUrl)
     .then((userData) => {
-      const newAvatarUrl = userData.avatar || avatarUrl 
+      const newAvatarUrl = userData.avatar || avatarUrl;
       profileImage.style.backgroundImage = `url(${newAvatarUrl})`;
       editAvatarForm.reset();
       closeModal(popupChangeAvatar);

@@ -4,7 +4,7 @@ function openModal(popup) {
   popup.classList.add("popup_is-opened");
   const escapeHandler = (evt) => {
     if (evt.key === "Escape") {
-      closeModal(popup); 
+      closeModal(popup);
     }
   };
   document.addEventListener("keydown", escapeHandler);
@@ -16,4 +16,3 @@ function closeModal(popup) {
   document.removeEventListener("keydown", popup.escapeHandler);
   delete popup.escapeHandler;
 }
-

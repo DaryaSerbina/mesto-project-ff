@@ -6,7 +6,7 @@ function createCard(
   handleDeleteClick,
   likeCardServer,
   removeCardServer,
-  currentUserId 
+  currentUserId
 ) {
   const cardTemplate = document.querySelector("#card-template").content;
   const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
@@ -17,7 +17,7 @@ function createCard(
   cardImage.alt = cardData.name;
   cardLikes.textContent = cardData.likes.length;
   const deleteButton = cardElement.querySelector(".card__delete-button");
-  if (cardData.owner._id !== currentUserId) { 
+  if (cardData.owner._id !== currentUserId) {
     deleteButton.remove();
   }
   deleteButton.addEventListener("click", () => {
@@ -25,17 +25,23 @@ function createCard(
       handleDeleteClick(cardElement, cardData._id);
     }
   });
-  cardImage.addEventListener("click", () => handleOpenImage(cardData.link, cardData.name));
-  const likeButton = cardElement.querySelector(".card__like-button");
-  const isLiked = cardData.likes.some(
-    (like) => like._id === currentUserId 
+  cardImage.addEventListener("click", () =>
+    handleOpenImage(cardData.link, cardData.name)
   );
+  const likeButton = cardElement.querySelector(".card__like-button");
+  const isLiked = cardData.likes.some((like) => like._id === currentUserId);
   if (isLiked) {
     likeButton.classList.add("card__like-button_is-active");
   }
 
   likeButton.addEventListener("click", () => {
-    likeCard(likeButton, cardLikes, cardData._id, likeCardServer, removeCardServer);
+    likeCard(
+      likeButton,
+      cardLikes,
+      cardData._id,
+      likeCardServer,
+      removeCardServer
+    );
   });
 
   return cardElement;
@@ -45,8 +51,16 @@ function deleteCard(cardElement) {
   cardElement.remove();
 }
 
-function likeCard(likeButton, cardLikes, cardId, likeCardServer, removeCardServer) {
-  const isCurrentlyLiked = likeButton.classList.contains("card__like-button_is-active");
+function likeCard(
+  likeButton,
+  cardLikes,
+  cardId,
+  likeCardServer,
+  removeCardServer
+) {
+  const isCurrentlyLiked = likeButton.classList.contains(
+    "card__like-button_is-active"
+  );
   if (isCurrentlyLiked) {
     removeCardServer(cardId)
       .then((updatedCard) => {
